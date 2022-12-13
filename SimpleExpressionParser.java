@@ -1,6 +1,3 @@
-import java.util.Stack;
-import java.util.function.*;
-
 public class SimpleExpressionParser implements ExpressionParser {
         /*
          * Attempts to create an expression tree from the specified String.
@@ -32,9 +29,19 @@ public class SimpleExpressionParser implements ExpressionParser {
 	protected Expression parseAdditiveExpression (String str) {
 		for(int i = 0; i < str.length(); i++){
 			char op = str.charAt(i);
-			if (op == '+' || op == '-') {
-				Expression left = parseMultiplicativeExpression(str.substring(0, i));
-				Expression right = parseExponentialExpression(str.substring(i + 1));
+			if (op == '+') {
+				Expression left = parseAdditiveExpression(str.substring(0, i));
+				Expression right = parseMultiplicativeExpression(str.substring(i + 1));
+				if (left != null && right != null){
+					return new AdditiveExpression(left, right, op);
+				}
+			}
+		}
+		for(int i = 0; i < str.length(); i++){
+			char op = str.charAt(i);
+			if (op == '-') {
+				Expression left = parseAdditiveExpression(str.substring(0, i));
+				Expression right = parseMultiplicativeExpression(str.substring(i + 1));
 				if (left != null && right != null){
 					return new AdditiveExpression(left, right, op);
 				}
@@ -45,7 +52,7 @@ public class SimpleExpressionParser implements ExpressionParser {
 
 	/*
 	 * Attempts to create an expression tree from the specified String.`
-	 * Throws a ExpressionParseException if the specified string cannot be parsed.
+	 * Throw an ExpressionParseException if the specified string cannot be parsed.
 	 * @param str the string to parse into an expression tree
 	 * @return the Expression object representing the parsed expression tree
 	 * M -> M*E | M/E | E
@@ -54,15 +61,15 @@ public class SimpleExpressionParser implements ExpressionParser {
 		for(int i = 0; i < str.length(); i++){
 			char op = str.charAt(i);
 			if (op == '*') {
-				Expression left = parseAdditiveExpression(str.substring(0, i));
-				Expression right = parseAdditiveExpression(str.substring(i + 1));
+				Expression left = parseMultiplicativeExpression(str.substring(0, i));
+				Expression right = parseExponentialExpression(str.substring(i + 1));
 				if (left != null && right != null){
 					return new MultiplicativeExpression(left, right, op);
 				}
 			}
 			if (op == '/') {
-				Expression left = parseAdditiveExpression(str.substring(0, i));
-				Expression right = parseAdditiveExpression(str.substring(i + 1));
+				Expression left = parseMultiplicativeExpression(str.substring(0, i));
+				Expression right = parseExponentialExpression(str.substring(i + 1));
 				if (left != null && right != null){
 					return new MultiplicativeExpression(left, right, op);
 				}
@@ -71,6 +78,13 @@ public class SimpleExpressionParser implements ExpressionParser {
 		return parseExponentialExpression(str);
 	}
 
+	/*
+	 * Attempts to create an expression tree from the specified String.
+	 * Throws an ExpressionParseException if the specified string cannot be parsed.
+	 * @param str the string to parse into an expression tree
+	 * @return the Expression object representing the parsed expression tree
+	 * E -> P^E | P | log(P)
+	 */
 	protected Expression parseExponentialExpression (String str) {
 		for(int i = 0; i < str.length(); i++){
 			char op = str.charAt(i);
@@ -82,14 +96,13 @@ public class SimpleExpressionParser implements ExpressionParser {
 				}
 			}
 		}
-		if (parseParentheticalExpression(str) != null) {
-			return parseParentheticalExpression(str);
+		Expression expression = parseParentheticalExpression(str);
+		if (expression != null) {
+			return expression;
 		}
 		for (int i = 0; i < str.length(); i++) {
 			char op = str.charAt(i);
 			if (op == 'l') {
-				// log(x+(5+6))
-				//new ParentheticalExpression(parseAdditiveExpression(str.substring(i + 4, str.length() - 1)));
 				Expression right = parseParentheticalExpression(str.substring(i + 3));
 				if (right != null){
 					return new ExponentialExpression(right);
@@ -98,20 +111,18 @@ public class SimpleExpressionParser implements ExpressionParser {
 		}
 		return null;
 	}
-	// 3x^(((((2x)))))
-	// ^ node
-	// left: 3x
-	// right: (((2x)))
 
-
-	// ()
-	// ()
-	// ()
-	// 2x
+	/*
+	 * Attempts to create an expression tree from the specified String.
+	 * Throws an ExpressionParseException if the specified string cannot be parsed.
+	 * @param str the string to parse into an expression tree
+	 * @return the Expression object representing the parsed expression tree
+	 * P -> (S) | L | V
+	 */
 	protected Expression parseParentheticalExpression (String str) {
-		if (str.charAt(0) == '(' && str.charAt(str.length() - 1) == ')'){
+		if (str.startsWith("(") && str.endsWith(")")) {
 			String sub = str.substring(1, str.length() - 1);
-			return parseAdditiveExpression(str.substring(1, str.length() - 1));
+			return new ParentheticalExpression(parseAdditiveExpression(sub));
 		}
 		Expression endPoint = parseLiteralExpression(str);
 		if (endPoint == null) {
@@ -119,57 +130,28 @@ public class SimpleExpressionParser implements ExpressionParser {
 		}
 		return endPoint;
 	}
-//		// Split by open and close parentheses
-//		String[] tokens = str.split("\\(|\\)");
-//
-//		// Use stack to keep track of parentheses
-//		Stack<String> stack = new Stack<>();
-//
-//		for(String token : tokens){
-//			if(token.equals("(")){
-//				// If the token is an open parenthesis, push onto the stack
-//				stack.push(token);
-//			}
-//			else if(token.equals(")")){
-//				// If the token is a close parenthesis, pop an open parenthis from stack.
-//				// If stack is empty, it means there is mismatched parenthesis in expression
-//				if(stack.isEmpty()){
-//					// Illegal argument
-//				}
-//				else{
-//					stack.pop();
-//				}
-//			}
-//			else{
-//				// if token is not a parenthesis, it is an operand
-//				// parse and evaluate those here
-//				return new ParentheticalExpression(parseParentheticalExpression(token));
-//			}
-//			// ((x+1) + (x-2))
-//			// (node)
-//			// (x+1) + (x-2)
-//			// +node (x+1) (x-2)
-//		}
-//		// If stack is not empty, there are unmatched open parenthesis in expression
-//		if(!stack.isEmpty()){
-//			// Illegal argument
-//		}
 
-
-
-		//return parseVariableExpression(str);
-
-
-	// TODO: once you implement a VariableExpression class, fix the return-type below.
+	/*
+	 * Attempts to create an expression tree from the specified String.
+	 * Throws an ExpressionParseException if the specified string cannot be parsed.
+	 * @param str the string to parse into an expression tree
+	 * @return the Expression object representing the parsed expression tree
+	 * V -> x
+	 */
 	protected VariableExpression parseVariableExpression (String str) {
 			if (str.equals("x")) {
-					// TODO implement the VariableExpression class and uncomment line below
 					return new VariableExpression();
 			}
 			return null;
 	}
 
-	// TODO: once you implement a LiteralExpression class, fix the return-type below.
+	/*
+	 * Attempts to create an expression tree from the specified String.
+	 * Throws an ExpressionParseException if the specified string cannot be parsed.
+	 * @param str the string to parse into an expression tree
+	 * @return the Expression object representing the parsed expression tree
+	 * L -> <float>
+	 */
 	protected LiteralExpression parseLiteralExpression (String str) {
 		// From https://stackoverflow.com/questions/3543729/how-to-check-that-a-string-is-parseable-to-a-double/22936891:
 		final String Digits     = "(\\p{Digit}+)";
@@ -212,8 +194,6 @@ public class SimpleExpressionParser implements ExpressionParser {
 		    "[\\x00-\\x20]*");// Optional trailing "whitespace"
 
 		if (str.matches(fpRegex)) {
-			// return null;
-			// TODO: Once you implement LiteralExpression, replace the line above with the line below:
 			return new LiteralExpression(str);
 		}
 		return null;

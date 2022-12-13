@@ -27,23 +27,6 @@ public class OperationHandler {
         }
     }
 
-//    double derivative(Expression l, Expression r, char op, double x) {
-//        switch (op) {
-//            case '+':
-//                return l.differentiate().evaluate(x) + r.differentiate().evaluate(x);
-//            case '-':
-//                return l.differentiate().evaluate(x) - r.differentiate().evaluate(x);
-//            case '*':
-//                return l.evaluate(x) * r.differentiate().evaluate(x) + l.differentiate().evaluate(x) * r.evaluate(x);
-//            case '/':
-//                return (l.evaluate(x) * r.differentiate().evaluate(x) - l.differentiate().evaluate(x) * r.evaluate(x)) / (r.evaluate(x) * r.evaluate(x));
-//            case '^':
-//                return Math.pow(l.evaluate(x), r.evaluate(x)) * (r.evaluate(x) * l.differentiate().evaluate(x) / l.evaluate(x) + Math.log(l.evaluate(x)) * r.differentiate().evaluate(x));
-//            default:
-//                throw new IllegalArgumentException("Invalid operator: " + op);
-//        }
-//    }
-
     /**
      * coverts the operation into a string
      * @param indentLevel how many tab characters should appear at the beginning of each line.
@@ -59,7 +42,6 @@ public class OperationHandler {
         }
         return "\t".repeat(indentLevel) + op + "\n"
                 + l.convertToString(indentLevel+1)
-                + "\n"
-                + r.convertToString(indentLevel+1);
+                + (op != 'l' ? r.convertToString(indentLevel+1) : ""); // log only has one child
     }
 }

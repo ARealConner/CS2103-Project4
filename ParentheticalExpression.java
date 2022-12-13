@@ -1,5 +1,5 @@
 public class ParentheticalExpression extends OperationHandler implements Expression {
-    private Expression child;
+    private final Expression child;
 
     public ParentheticalExpression(Expression child) {
         this.child = child;
@@ -45,7 +45,7 @@ public class ParentheticalExpression extends OperationHandler implements Express
     /**
      * Produce a new, fully independent (i.e., there should be no shared subtrees) Expression
      * representing the derivative of this expression.
-     *
+     * (f(x))' = f'(x)
      * @return the derivative of this expression
      */
     @Override

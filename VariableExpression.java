@@ -23,7 +23,7 @@ public class VariableExpression implements Expression{
      */
     @Override
     public String convertToString(int indentLevel) {
-        return "\t".repeat(indentLevel) + "x";
+        return "\t".repeat(indentLevel) + "x" + "\n";
     }
 
     /**

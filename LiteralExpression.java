@@ -1,15 +1,16 @@
 public class LiteralExpression extends OperationHandler implements Expression {
-    private float value;
+    private final float value;
     public LiteralExpression (String value) {
         this.value = Float.parseFloat(value);
     }
-    @Override
+
     /**
-     * Creates and returns a deep copy of the expression.
-     * The entire tree rooted at the target node is copied, i.e.,
-     * the copied Expression is as deep as possible.
-     * @return the deep copy
+     Creates and returns a deep copy of the expression.
+     The entire tree rooted at the target node is copied, i.e.,
+     the copied Expression is as deep as possible.
+     @return the deep copy
      */
+    @Override
     public Expression deepCopy() {
         return new LiteralExpression(Float.toString(value));
     }
@@ -24,7 +25,7 @@ public class LiteralExpression extends OperationHandler implements Expression {
      */
     @Override
     public String convertToString(int indentLevel) {
-        return "\t".repeat(indentLevel) + value;
+        return "\t".repeat(indentLevel) + value + "\n";
     }
 
     /**
@@ -41,6 +42,7 @@ public class LiteralExpression extends OperationHandler implements Expression {
      * Produce a new, fully independent (i.e., there should be no shared subtrees) Expression
      * representing the derivative of this expression.
      * @return the derivative of this expression
+     * d/dx c = 0
      */
     @Override
     public Expression differentiate() {

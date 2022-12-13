@@ -1,7 +1,7 @@
 public class AdditiveExpression extends OperationHandler implements Expression {
-    private Expression leftChild;
-    private Expression rightChild;
-    private char operator;
+    private final Expression leftChild;
+    private final Expression rightChild;
+    private final char operator;
 
     /**
      * Creates a new AdditiveExpression with the given left and right children and operator.
@@ -54,7 +54,7 @@ public class AdditiveExpression extends OperationHandler implements Expression {
     /**
      * Produce a new, fully independent (i.e., there should be no shared subtrees) Expression
      * representing the derivative of this expression.
-     *
+     * f(x) + g(x) = f'(x) + g'(x)
      * @return the derivative of this expression
      */
     @Override

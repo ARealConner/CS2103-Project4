@@ -1,7 +1,7 @@
 public class MultiplicativeExpression extends OperationHandler implements Expression {
-    private Expression leftChild;
-    private Expression rightChild;
-    private char operator;
+    private final Expression leftChild;
+    private final Expression rightChild;
+    private final char operator;
 
     /**
      * Creates a new MultiplicativeExpression with the given left and right children and operator.
@@ -55,13 +55,13 @@ public class MultiplicativeExpression extends OperationHandler implements Expres
     /**
      * Produce a new, fully independent (i.e., there should be no shared subtrees) Expression
      * representing the derivative of this expression.
-     *
+     * f(x) * g(x) = f'(x) * g(x) + f(x) * g'(x)
      * @return the derivative of this expression
      */
     @Override
     public Expression differentiate() {
         if (operator == '*') {
-            return new AdditiveExpression(
+            return new AdditiveExpression( // f'(x) * g(x) + f(x) * g'(x)
                     new MultiplicativeExpression(leftChild.differentiate(), rightChild, '*'),
                     new MultiplicativeExpression(leftChild, rightChild.differentiate(), '*'),
                     '+'

@@ -1,9 +1,7 @@
-import com.sun.scenario.effect.LinearConvolveCoreEffect;
-
 public class ExponentialExpression extends OperationHandler implements Expression {
-    private Expression leftChild;
+    private final Expression leftChild;
     private Expression rightChild;
-    private char operator;
+    private final char operator;
 
     /**
      * Creates a new ExponentialExpression with the ^ operator.
@@ -81,7 +79,6 @@ public class ExponentialExpression extends OperationHandler implements Expressio
             // If function f(x)=C^h(x) (where C is a positive constant),
             // then its derivative is f'(x)=(log C) C^h(x) h'(x),
             // where log is the natural logarithm function.
-
             if (leftChild instanceof LiteralExpression) {
                 return new MultiplicativeExpression(new MultiplicativeExpression( // (log C) C^h(x)
                         new ExponentialExpression(leftChild.deepCopy()), // log C
@@ -91,7 +88,6 @@ public class ExponentialExpression extends OperationHandler implements Expressio
             }
 
             // If function f(x)=g(x)^C (where C is a constant), then its derivative is f'(x)=C * g(x)^(C-1) * g'(x).
-
             if (rightChild instanceof LiteralExpression) {
                 return new MultiplicativeExpression(new MultiplicativeExpression( // C*g(x)^(C-1)
                         rightChild.deepCopy(), // C
