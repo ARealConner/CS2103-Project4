@@ -33,8 +33,8 @@ public class SimpleExpressionParser implements ExpressionParser {
 		for(int i = 0; i < str.length(); i++){
 			char op = str.charAt(i);
 			if (op == '+' || op == '-') {
-				Expression left = parseAdditiveExpression(str.substring(0, i));
-				Expression right = parseAdditiveExpression(str.substring(i + 1));
+				Expression left = parseMultiplicativeExpression(str.substring(0, i));
+				Expression right = parseExponentialExpression(str.substring(i + 1));
 				if (left != null && right != null){
 					return new AdditiveExpression(left, right, op);
 				}
@@ -53,7 +53,14 @@ public class SimpleExpressionParser implements ExpressionParser {
 	protected Expression parseMultiplicativeExpression (String str) {
 		for(int i = 0; i < str.length(); i++){
 			char op = str.charAt(i);
-			if (op == '*' || op == '/') {
+			if (op == '*') {
+				Expression left = parseAdditiveExpression(str.substring(0, i));
+				Expression right = parseAdditiveExpression(str.substring(i + 1));
+				if (left != null && right != null){
+					return new MultiplicativeExpression(left, right, op);
+				}
+			}
+			if (op == '/') {
 				Expression left = parseAdditiveExpression(str.substring(0, i));
 				Expression right = parseAdditiveExpression(str.substring(i + 1));
 				if (left != null && right != null){
@@ -73,7 +80,14 @@ public class SimpleExpressionParser implements ExpressionParser {
 				if (left != null && right != null){
 					return new ExponentialExpression(left, right);
 				}
-			} else if (op == 'l') {
+			}
+		}
+		if (parseParentheticalExpression(str) != null) {
+			return parseParentheticalExpression(str);
+		}
+		for (int i = 0; i < str.length(); i++) {
+			char op = str.charAt(i);
+			if (op == 'l') {
 				// log(x+(5+6))
 				//new ParentheticalExpression(parseAdditiveExpression(str.substring(i + 4, str.length() - 1)));
 				Expression right = parseParentheticalExpression(str.substring(i + 3));
@@ -81,8 +95,8 @@ public class SimpleExpressionParser implements ExpressionParser {
 					return new ExponentialExpression(right);
 				}
 			}
-			}
-		return parseParentheticalExpression(str);
+		}
+		return null;
 	}
 	// 3x^(((((2x)))))
 	// ^ node
@@ -97,9 +111,6 @@ public class SimpleExpressionParser implements ExpressionParser {
 	protected Expression parseParentheticalExpression (String str) {
 		if (str.charAt(0) == '(' && str.charAt(str.length() - 1) == ')'){
 			String sub = str.substring(1, str.length() - 1);
-			if (sub.length() == 0) {
-				return null;
-			}
 			return parseAdditiveExpression(str.substring(1, str.length() - 1));
 		}
 		Expression endPoint = parseLiteralExpression(str);
