@@ -80,12 +80,58 @@ public class GraphingCalculator extends Application {
 		queryPane.getChildren().add(graphButton);
 		queryPane.getChildren().add(diffBox);
 
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//final Pane graphPane = new Pane();
+		//final LineChart<Number, Number> chart = new LineChart<Number, Number>(new NumberAxis(), new NumberAxis());
+		//chart.setCreateSymbols(false);
+		//graphPane.getChildren().add(chart);
+		graphPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				if (event.getClickCount() == 2) {
+					final double x = (double) chart.getXAxis().getValueForDisplay(event.getX());
+					final double y = (double) chart.getYAxis().getValueForDisplay(event.getY());
+					final double xMin = ((NumberAxis) chart.getXAxis()).getLowerBound();
+					final double xMax = ((NumberAxis) chart.getXAxis()).getUpperBound();
+					final double yMin = ((NumberAxis) chart.getYAxis()).getLowerBound();
+					final double yMax = ((NumberAxis) chart.getYAxis()).getUpperBound();
+					final double xRange = xMax - xMin;
+					final double yRange = yMax - yMin;
+					((NumberAxis) chart.getXAxis()).setLowerBound(x - xRange / 4);
+					((NumberAxis) chart.getXAxis()).setUpperBound(x + xRange / 4);
+					((NumberAxis) chart.getYAxis()).setLowerBound(y - yRange / 4);
+					((NumberAxis) chart.getYAxis()).setUpperBound(y + yRange / 4);
+				}
+			}
+		});
+
+		graphPane.setOnMousePressed(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				if (event.getClickCount() == 1) {
+					final double x = (double) chart.getXAxis().getValueForDisplay(event.getX());
+					final double y = (double) chart.getYAxis().getValueForDisplay(event.getY());
+					final double xMin = ((NumberAxis) chart.getXAxis()).getLowerBound();
+					final double xMax = ((NumberAxis) chart.getXAxis()).getUpperBound();
+					final double yMin = ((NumberAxis) chart.getYAxis()).getLowerBound();
+					final double yMax = ((NumberAxis) chart.getYAxis()).getUpperBound();
+					final double xRange = xMax - xMin;
+					final double yRange = yMax - yMin;
+					((NumberAxis) chart.getXAxis()).setLowerBound(x - xRange / 4);
+					((NumberAxis) chart.getXAxis()).setUpperBound(x + xRange / 4);
+					((NumberAxis) chart.getYAxis()).setLowerBound(y - yRange / 4);
+					((NumberAxis) chart.getYAxis()).setUpperBound(y + yRange / 4);
+				}
+			}
+		});
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		textField.setOnKeyPressed(e -> textField.setStyle("-fx-text-fill: black"));
-		
+
 		final BorderPane root = new BorderPane();
 		root.setTop(queryPane);
 		root.setCenter(graphPane);
-
 		final Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
 		primaryStage.setScene(scene);
 		primaryStage.show();
