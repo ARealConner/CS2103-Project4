@@ -1,21 +1,20 @@
 import javafx.application.Application;
-import javafx.scene.chart.*;
-import java.util.*;
-import javafx.geometry.Point2D;
-import javafx.scene.control.*;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
+import javafx.geometry.Point2D;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.Node;
-import javafx.scene.input.MouseEvent;
-import javafx.event.EventHandler;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import javafx.scene.input.*;
 
 public class GraphingCalculator extends Application {
 	public static void main (String[] args) {
@@ -73,13 +72,6 @@ public class GraphingCalculator extends Application {
 						final Expression derivative = expression.differentiate();
 						graph(chart, derivative, false);
 					}
-					if (autoScaleBox.isSelected()) {
-						chart.getXAxis().setAutoRanging(true);
-						chart.getYAxis().setAutoRanging(true);
-					} else {
-						chart.getXAxis().setAutoRanging(false);
-						chart.getYAxis().setAutoRanging(false);
-					}
 				} catch (ExpressionParseException epe) {
 					textField.setStyle("-fx-text-fill: red");
 				} catch (UnsupportedOperationException epe) {
@@ -90,7 +82,10 @@ public class GraphingCalculator extends Application {
 		queryPane.getChildren().add(graphButton);
 		queryPane.getChildren().add(diffBox);
 
-		////////////////////////////////////
+		////////////////////////////////////Extra Credit/////////////////////////////////////
+		/*
+		 * Sets autoscaling on and off when the box is ticked.
+		 */
 		autoScaleBox.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
 			public void handle (MouseEvent event) {
@@ -159,8 +154,7 @@ public class GraphingCalculator extends Application {
 				}
 			}
 		});
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////
 
 		textField.setOnKeyPressed(e -> textField.setStyle("-fx-text-fill: black"));
 		final BorderPane root = new BorderPane();
