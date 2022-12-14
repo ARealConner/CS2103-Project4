@@ -25,6 +25,12 @@ public class GraphingCalculator extends Application {
 	protected static final double MIN_X = -10, MAX_X = +10, DELTA_X = 0.01;
 	protected static final double MIN_Y = -10, MAX_Y = +10;
 	protected static final double GRID_INTERVAL = 5;
+	private double currentXScale = 1.0;
+	private double currentYScale = 1.0;
+	private final double X_DRAG_SCALE = 22; // this effects the drag speed of the graph Higher number = slower drag
+	private final double Y_DRAG_SCALE = 17; // this effects the drag speed of the graph Higher number = slower drag
+	private boolean isDragEnabled = true; // this is used to enable/disable the drag feature
+	Point2D prevPoint;
 	protected static final String EXAMPLE_EXPRESSION = "2*x+5*x*x";
 	protected final ExpressionParser expressionParser = new SimpleExpressionParser();
 
@@ -50,6 +56,7 @@ public class GraphingCalculator extends Application {
 		final Button graphButton = new Button("Graph");
 		final CheckBox diffBox = new CheckBox("Show Derivative");
 		final CheckBox autoScaleBox = new CheckBox("Auto Scale");
+		final CheckBox toggleNavigationBox = new CheckBox("Enable Click Navigation");
 		queryPane.getChildren().add(label);
 		queryPane.getChildren().add(textField);
 
@@ -100,10 +107,19 @@ public class GraphingCalculator extends Application {
 		});
 		queryPane.getChildren().add(autoScaleBox);
 
+		toggleNavigationBox.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent mouseEvent) {
+				isDragEnabled = !toggleNavigationBox.isSelected();
+			}
+		});
+		queryPane.getChildren().add(toggleNavigationBox);
+
 		/*
 		 * Allows the graph to zoom in and out when the mouse is scrolled
 		 */
 		final double SCALE_DELTA = 1.05;
+
 		chart.setOnScroll(new EventHandler<ScrollEvent>() {
 			public void handle(ScrollEvent event) {
 				event.consume();
@@ -113,13 +129,17 @@ public class GraphingCalculator extends Application {
 				double scaleFactor;
 				if  (event.getDeltaY() > 0) {
 					scaleFactor = SCALE_DELTA;
+					currentXScale *= scaleFactor;
+					currentYScale *= scaleFactor;
 				} else {
 					scaleFactor = 1 / SCALE_DELTA;
+					currentXScale /= SCALE_DELTA;
+					currentYScale /= SCALE_DELTA;
 				}
 				((NumberAxis) chart.getXAxis()).setLowerBound(((NumberAxis) chart.getXAxis()).getLowerBound() * scaleFactor);
 				((NumberAxis) chart.getXAxis()).setUpperBound(((NumberAxis) chart.getXAxis()).getUpperBound() * scaleFactor);
-				((NumberAxis) chart.getYAxis()).setLowerBound(((NumberAxis) chart.getXAxis()).getLowerBound() * scaleFactor);
-				((NumberAxis) chart.getYAxis()).setUpperBound(((NumberAxis) chart.getXAxis()).getUpperBound() * scaleFactor);
+				((NumberAxis) chart.getYAxis()).setLowerBound(((NumberAxis) chart.getYAxis()).getLowerBound() * scaleFactor);
+				((NumberAxis) chart.getYAxis()).setUpperBound(((NumberAxis) chart.getYAxis()).getUpperBound() * scaleFactor);
 			}
 		});
 
@@ -128,11 +148,13 @@ public class GraphingCalculator extends Application {
 		 */
 		chart.setOnMousePressed(new EventHandler<MouseEvent>() {
 			public void handle(MouseEvent event) {
-				if (event.isSecondaryButtonDown()) {
+				if (event.isSecondaryButtonDown() && !event.isPrimaryButtonDown()) {
 					((NumberAxis) chart.getXAxis()).setLowerBound(MIN_X);
 					((NumberAxis) chart.getXAxis()).setUpperBound(MAX_X);
 					((NumberAxis) chart.getYAxis()).setLowerBound(MIN_Y);
 					((NumberAxis) chart.getYAxis()).setUpperBound(MAX_Y);
+					currentXScale = 1;
+					currentYScale = 1;
 				}
 			}
 		});
@@ -144,13 +166,72 @@ public class GraphingCalculator extends Application {
 			@Override
 			public void handle(MouseEvent event) {
 				if (event.getClickCount() == 1 && event.isPrimaryButtonDown()) {
+					if (isDragEnabled) {
+						return;
+					}
 					Point2D point = new Point2D(event.getX(), event.getY());
 					double x = chart.getXAxis().getValueForDisplay(point.getX()).doubleValue();
 					double y = chart.getYAxis().getValueForDisplay(point.getY()).doubleValue();
-					((NumberAxis) chart.getXAxis()).setLowerBound(x - GRID_INTERVAL);
-					((NumberAxis) chart.getXAxis()).setUpperBound(x + GRID_INTERVAL);
-					((NumberAxis) chart.getYAxis()).setLowerBound(y - GRID_INTERVAL);
-					((NumberAxis) chart.getYAxis()).setUpperBound(y + GRID_INTERVAL);
+					double xMax = ((NumberAxis) chart.getXAxis()).getUpperBound();
+					double xMin = ((NumberAxis) chart.getXAxis()).getLowerBound();
+					double yMax = ((NumberAxis) chart.getYAxis()).getUpperBound();
+					double yMin = ((NumberAxis) chart.getYAxis()).getLowerBound();
+					double xRange = xMax - xMin;
+					double yRange = yMax - yMin;
+					((NumberAxis) chart.getXAxis()).setLowerBound(x - xRange / 2);
+					((NumberAxis) chart.getXAxis()).setUpperBound(x + xRange / 2);
+					((NumberAxis) chart.getYAxis()).setLowerBound(y - yRange / 2);
+					((NumberAxis) chart.getYAxis()).setUpperBound(y + yRange / 2);
+//					double xRange = xMax - xMin;
+//					double yRange = yMax - yMin;
+//					double baseXRange = MAX_X - MIN_X;
+//					double baseYRange = MAX_Y - MIN_Y;
+//					currentXScale = xRange / baseXRange;
+//					currentYScale = yRange / baseYRange;
+//					((NumberAxis) chart.getXAxis()).setLowerBound(x - GRID_INTERVAL* currentXScale);
+//					((NumberAxis) chart.getXAxis()).setUpperBound(x + GRID_INTERVAL* currentXScale);
+//					((NumberAxis) chart.getYAxis()).setLowerBound(y - GRID_INTERVAL* currentYScale);
+//					((NumberAxis) chart.getYAxis()).setUpperBound(y + GRID_INTERVAL* currentYScale);
+				}
+			}
+		});
+
+		graphPane.setOnMouseDragged(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				if (event.isPrimaryButtonDown()) {
+					if (!isDragEnabled){
+						return;
+					}
+					if (prevPoint != null) {
+						Point2D point = new Point2D(event.getX(), event.getY());
+						double x = chart.getXAxis().getValueForDisplay(point.getX()).doubleValue();
+						double y = chart.getYAxis().getValueForDisplay(point.getY()).doubleValue();
+						double xMax = ((NumberAxis) chart.getXAxis()).getUpperBound();
+						double xMin = ((NumberAxis) chart.getXAxis()).getLowerBound();
+						double yMax = ((NumberAxis) chart.getYAxis()).getUpperBound();
+						double yMin = ((NumberAxis) chart.getYAxis()).getLowerBound();
+						double xRange = xMax - xMin;
+						double yRange = yMax - yMin;
+						currentXScale = (xRange / (MAX_X - MIN_X))/22;
+						currentYScale = (yRange / (MAX_Y - MIN_Y))/17;
+
+						((NumberAxis) chart.getXAxis()).setLowerBound(((NumberAxis) chart.getXAxis()).getLowerBound() + (prevPoint.getX() - event.getX())*currentXScale);
+						((NumberAxis) chart.getXAxis()).setUpperBound(((NumberAxis) chart.getXAxis()).getUpperBound() + (prevPoint.getX() - event.getX())*currentXScale);
+						((NumberAxis) chart.getYAxis()).setLowerBound(((NumberAxis) chart.getYAxis()).getLowerBound() - (prevPoint.getY() - event.getY())*currentYScale);
+						((NumberAxis) chart.getYAxis()).setUpperBound(((NumberAxis) chart.getYAxis()).getUpperBound() - (prevPoint.getY() - event.getY())*currentYScale);
+					}
+
+					prevPoint = new Point2D(event.getX(), event.getY());
+				}
+			}
+		});
+
+		graphPane.setOnMouseReleased(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent mouseEvent) {
+				if (! mouseEvent.isPrimaryButtonDown()) {
+					prevPoint = null;
 				}
 			}
 		});
