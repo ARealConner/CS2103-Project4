@@ -20,19 +20,19 @@ interface Expression {
 	 * @param indentLevel how many tab characters should appear at the beginning of each line.
 	 * @return the String representing this expression.
 	 */
-	public String convertToString (int indentLevel);
+	String convertToString (int indentLevel);
 
 	/**
 	 * Given the value of the independent variable x, compute the value of this expression.
 	 * @param x the value of the independent variable x
 	 * @return the value of this expression.
 	 */
-	public double evaluate (double x);
+	double evaluate (double x);
 
 	/**
 	 * Produce a new, fully independent (i.e., there should be no shared subtrees) Expression
 	 * representing the derivative of this expression.
 	 * @return the derivative of this expression
 	 */
-	public Expression differentiate ();
+	Expression differentiate ();
 }

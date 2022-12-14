@@ -44,7 +44,6 @@ public class ExpressionParserTester {
 	@Test	
 	public void testExpression3 () throws ExpressionParseException {
 		final String expressionStr = "10*x^3 + 2*(15+x)";
-		final String parseTreeStr = "";
 		assertEquals("+\n\t*\n\t\t10.0\n\t\t^\n\t\t\tx\n\t\t\t3.0\n\t*\n\t\t2.0\n\t\t()\n\t\t\t+\n\t\t\t\t15.0\n\t\t\t\tx\n", _parser.parse(expressionStr).convertToString(0));
 	}
 
